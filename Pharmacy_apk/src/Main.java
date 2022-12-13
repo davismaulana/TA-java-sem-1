@@ -4,12 +4,11 @@ public class Main {
     static Scanner sc = new Scanner(System.in);
     static boolean mainSection = false, loginSection = false;
     static String user = null, password = null, level = null;
-    static int stock[] = {
-            10,10,20,20,10,
-            10,40,20,
-            20,10,24,
-            23,41,22
-
+    static int stock[][] = {
+            {10,50000},{10,30000},{20,25000},{20,56000},{10,70000},
+            {10,100000},{40,80000},{20,40000},
+            {20,150000},{10,50000},{24,90000},
+            {23,200000},{41,250000},{22,100000}
     };
     static String prescrip[] = {
             "acarbose","acetazolamide","acetylcysteine","albumin","allopurinol",
@@ -33,9 +32,10 @@ public class Main {
 
     static void cashier(){
         String name;
-        int count,index,calculate;
+        int count,index,calculate,priceTotal;
         String orderName[] = new String[99];
         int orderStock[] = new int[99];
+        int orderPrice[] = new int[99];
         boolean repeatSec = false;
 
         line();
@@ -49,23 +49,25 @@ public class Main {
             if (index == -1){
                 System.out.println("| The prescription isn't available |");
                 repeatSec = true;
-            }else if(stock[index] == 0){
+            }else if(stock[index][0] == 0){
                 System.out.println("| Out of stock |");
                 repeatSec = true;
             }else {
                 System.out.print("Enter the number of prescription : ");
                 count = sc.nextInt();
                 sc.nextLine();
-                calculate = stock[index] - count;
+                calculate = stock[index][0] - count;
+                priceTotal = stock[index][1] * count;
                 if (calculate < 0){
                     System.out.println("| Not enough stock |");
                     repeatSec = true;
                 }else {
-                    stock[index] = calculate;
+                    stock[index][0] = calculate;
                     for (int i = 0; i < orderName.length;i++){
                         if (orderName[i] == null) {
                             orderName[i] = name;
                             orderStock[i] = count;
+                            orderPrice[i] = priceTotal;
                             break;
                         }
                     }
@@ -78,16 +80,42 @@ public class Main {
                             repeatSec = true;
                             break;
                         default:
-                            System.out.println("--------------------");
-                            System.out.println("     Order Data     ");
-                            System.out.println("--------------------");
+                            System.out.println("-------------------------------------------");
+                            System.out.println("                 Order Data                ");
+                            System.out.println("-------------------------------------------");
                             System.out.println("By " + user);
+                            System.out.printf("|");
+                            System.out.printf("%-20s","Name");
+                            System.out.printf("%-2s","|");
+                            System.out.printf("%-7s","Count");
+                            System.out.printf("%-2s","|");
+                            System.out.printf("%-10s", "Price");
+                            System.out.println("|");
                             for (int i = 0;i < orderName.length;i++){
                                 if (orderName[i] != null){
-                                    System.out.println(orderName[i] + " = " + orderStock[i]);
+                                    System.out.printf("|");
+                                    System.out.printf("%-20s",orderName[i]);
+                                    System.out.printf("%-2s","|");
+                                    System.out.printf("%-7s",orderStock[i]);
+                                    System.out.printf("%-2s","|");
+                                    System.out.printf("%-10s", orderPrice[i]);
+                                    System.out.println("|");
                                 }
                             }
-                            System.out.println("--------------------");
+                            System.out.println("-------------------------------------------");
+                            int orderTotal = 0, payTotal = 0;
+                            for (int i = 0 ; i < orderName.length ; i++){
+                                orderTotal += orderStock[i];
+                                payTotal += orderPrice[i];
+                            }
+                            System.out.printf("|");
+                            System.out.printf("%-20s", "Total");
+                            System.out.printf("%-2s","|");
+                            System.out.printf("%-7s",orderTotal);
+                            System.out.printf("%-2s","|");
+                            System.out.printf("%-10s", payTotal);
+                            System.out.println("|");
+                            System.out.println("-------------------------------------------");
                             System.out.println();
                             repeatSec = false;
                             mainSection = true;
@@ -132,7 +160,9 @@ public class Main {
         System.out.printf("%-2s", "|");
         System.out.printf("%-20s","Name");
         System.out.printf("%-2s","|");
-        System.out.printf("%-10s","Stock");
+        System.out.printf("%-7s","Stock");
+        System.out.printf("%-2s","|");
+        System.out.printf("%-10s","Price");
         System.out.println("|");
 
         if (prescrip[0] == null){
@@ -140,6 +170,8 @@ public class Main {
             System.out.printf("%-2s", "-");
             System.out.printf("%-2s", "|");
             System.out.printf("%-20s","null");
+            System.out.printf("%-2s","|");
+            System.out.printf("%-7s","null");
             System.out.printf("%-2s","|");
             System.out.printf("%-10s","null");
             System.out.println("|");
@@ -152,7 +184,9 @@ public class Main {
                     System.out.printf("%-2s", "|");
                     System.out.printf("%-20s",prescrip[i]);
                     System.out.printf("%-2s","|");
-                    System.out.printf("%-10s",stock[i]);
+                    System.out.printf("%-7s",stock[i][0]);
+                    System.out.printf("%-2s","|");
+                    System.out.printf("%-10s",stock[i][1]);
                     System.out.println("|");
                     num++;
                 }
@@ -174,8 +208,9 @@ public class Main {
             if (level == "admin"){
                 System.out.println("Menu");
                 System.out.println("1. Add Stock");
-                System.out.println("2. Back to Menu");
-                System.out.print("Choose (1/2) : ");
+                System.out.println("2. Edit Price");
+                System.out.println("3. Back to Menu");
+                System.out.print("Choose (1-3) : ");
                 choice = sc.nextInt();
                 switch (choice){
                     case 1:
@@ -183,12 +218,16 @@ public class Main {
                         prescripData();
                         break;
                     case 2:
+                        editPrice();
+                        prescripData();
+                        break;
+                    case 3:
                         sectionDataPres = false;
                         mainSection = true;
                         break;
 
                     default:
-                        System.out.println("Please choose between 1-2");
+                        System.out.println("Please choose between 1-3");
                         sectionDataPres = true;
                 }
             }else{
@@ -211,6 +250,46 @@ public class Main {
         }while (sectionDataPres == true);
     }
 
+    static void tableMember(){
+        System.out.printf("|");
+        System.out.printf("%-2s", "No");
+        System.out.printf("%-2s", "|");
+        System.out.printf("%-15s","Username");
+        System.out.printf("%-2s","|");
+        System.out.printf("%-15s","Password");
+        System.out.printf("%-2s","|");
+        System.out.printf("%-7s","level");
+        System.out.println("|");
+
+        if (member[0] == null){
+            System.out.printf("|");
+            System.out.printf("%-2s", "-");
+            System.out.printf("%-2s", "|");
+            System.out.printf("%-15s","null");
+            System.out.printf("%-2s","|");
+            System.out.printf("%-15s","null");
+            System.out.printf("%-2s","|");
+            System.out.printf("%-7s","null");
+            System.out.println("|");
+        }else {
+            int num = 1;
+            for (int i = 0;i< member.length;i++){
+                if (member[i] != null){
+                    System.out.printf("|");
+                    System.out.printf("%-2s", num);
+                    System.out.printf("%-2s", "|");
+                    System.out.printf("%-15s",member[i][0]);
+                    System.out.printf("%-2s","|");
+                    System.out.printf("%-15s",member[i][1]);
+                    System.out.printf("%-2s","|");
+                    System.out.printf("%-7s",member[i][2]);
+                    System.out.println("|");
+                    num++;
+                }
+            }
+        }
+    }
+
     static void memberData(){
         int choice;
         boolean sectionMember = false;
@@ -219,156 +298,23 @@ public class Main {
         System.out.println("Member Data");
         line();
 
-        do {
-            System.out.printf("|");
-            System.out.printf("%-2s", "No");
-            System.out.printf("%-2s", "|");
-            System.out.printf("%-15s","Username");
-            System.out.printf("%-2s","|");
-            System.out.printf("%-15s","Password");
-            System.out.printf("%-2s","|");
-            System.out.printf("%-7s","level");
-            System.out.println("|");
+        tableMember();
 
-            if (member[0] == null){
-                System.out.printf("|");
-                System.out.printf("%-2s", "-");
-                System.out.printf("%-2s", "|");
-                System.out.printf("%-15s","null");
-                System.out.printf("%-2s","|");
-                System.out.printf("%-15s","null");
-                System.out.printf("%-2s","|");
-                System.out.printf("%-7s","null");
-                System.out.println("|");
-            }else {
-                int num = 1;
-                for (int i = 0;i< member.length;i++){
-                    if (member[i] != null){
-                        System.out.printf("|");
-                        System.out.printf("%-2s", num);
-                        System.out.printf("%-2s", "|");
-                        System.out.printf("%-15s",member[i][0]);
-                        System.out.printf("%-2s","|");
-                        System.out.printf("%-15s",member[i][1]);
-                        System.out.printf("%-2s","|");
-                        System.out.printf("%-7s",member[i][2]);
-                        System.out.println("|");
-                        num++;
-                    }
-                }
-            }
+        do {
             System.out.println("Menu");
-            System.out.println("1. Edit Member");
-            System.out.println("2. Delete Member");
-            System.out.println("3. Back to Menu");
-            System.out.print("Choose (1-3) : ");
+            System.out.println("1. Back to Menu");
+            System.out.print("Choose (1) : ");
             choice = sc.nextInt();
             switch (choice){
                 case 1:
-                    editMember();
-                    memberData();
-                    break;
-                case 2:
-                    deleteMember();
-                    memberData();
-                    break;
-                case 3:
                     sectionMember = false;
                     mainSection = true;
                     break;
                 default:
-                    System.out.println("Please choose between (1-3) ");
+                    System.out.println("Choose 1 for exit ");
                     sectionMember = true;
             }
         }while (sectionMember == true);
-
-    }
-
-    static void editMember(){
-        int arrLeng,a,choice,level;
-        String username,pass;
-        boolean chooseEdit = false,chooseLevel = false;
-        arrLeng = member.length;
-        System.out.print("Choose the number of Member (1-"+ arrLeng +") : ");
-        a = sc.nextInt();
-
-        int num = 1;
-
-        if (a < arrLeng){
-            System.out.println("Please choose between (1 - " + arrLeng + ") : ");
-
-        }else {
-            for (int i = 0 ; i < arrLeng ; i++){
-                if (a == num){
-                    System.out.printf("|");
-                    System.out.printf("%-2s", "No");
-                    System.out.printf("%-2s", "|");
-                    System.out.printf("%-15s","Username");
-                    System.out.printf("%-2s","|");
-                    System.out.printf("%-15s","Password");
-                    System.out.printf("%-2s","|");
-                    System.out.printf("%-7s","level");
-                    System.out.println("|");
-
-                    System.out.printf("|");
-                    System.out.printf("%-2s", a);
-                    System.out.printf("%-2s", "|");
-                    System.out.printf("%-15s",member[i][0]);
-                    System.out.printf("%-2s","|");
-                    System.out.printf("%-15s",member[i][1]);
-                    System.out.printf("%-2s","|");
-                    System.out.printf("%-7s", member[i][2]);
-                    System.out.println("|");
-
-                    do {
-                        System.out.println("Menu");
-                        System.out.println("1. Change Username");
-                        System.out.println("2. Change Password");
-                        System.out.println("3. Change Level");
-                        System.out.print("Choose (1-3) : ");
-                        choice = sc.nextInt();
-
-                        switch (choice){
-                            case 1:
-                                System.out.print("Enter new Username : ");
-                                username = sc.nextLine();
-                                member[i][0] = username;
-                                break;
-                            case 2:
-                                System.out.print("Enter new Password : ");
-                                pass = sc.nextLine();
-                                member[i][1] = pass;
-                                break;
-                            case 3:
-                                do {
-                                    System.out.println("Choose new Level");
-                                    System.out.println("1. Admin");
-                                    System.out.println("2. User");
-                                    System.out.print("Choose (1-2) : ");
-                                    level = sc.nextInt();
-                                    if (level == 1){
-                                        member[i][2] = "Admin";
-                                    } else if (level == 2) {
-                                        member[i][2] = "User";
-                                    } else {
-                                        System.out.println("Please choose between (1-2) : ");
-                                        chooseLevel = true;
-                                    }
-                                }while (chooseLevel == true);
-                                break;
-                            default:
-                                System.out.println("Please choose between (1-3)");
-                                chooseEdit = true;
-                        }
-                    }while (chooseEdit == true);
-
-                }
-                num++;
-            }
-        }
-    }
-
-    static void deleteMember(){
 
     }
 
@@ -386,7 +332,28 @@ public class Main {
                 if (a == num){
                     System.out.print("Enter stock : ");
                     addStock = sc.nextInt();
-                    stock[i] += addStock;
+                    stock[i][0] += addStock;
+                }
+                num++;
+            }
+        }
+    }
+
+    static void editPrice(){
+        int a,price,arrLeng;
+        arrLeng = prescrip.length;
+        System.out.print("Choose the number of prescription (1-"+ arrLeng +") : ");
+        a = sc.nextInt();
+
+        int num = 1;
+        if(a > arrLeng){
+            System.out.println("Please choose between (1-" + arrLeng + ")");
+        } else {
+            for (int i = 0;i < prescrip.length;i++){
+                if (a == num){
+                    System.out.print("Enter Price : ");
+                    price = sc.nextInt();
+                    stock[i][1] = price;
                 }
                 num++;
             }
@@ -409,7 +376,6 @@ public class Main {
 
     public static void main(String[] args) {
         int choice;
-        String again;
 
         line();
         System.out.println("          WELCOME TO PHARMACY APK");
@@ -497,7 +463,7 @@ public class Main {
                 System.out.println("| Password wrong! |");
                 loginSection = true;
             } else {
-                System.out.println("| Lhogin error! |");
+                System.out.println("| Login error! |");
                 loginSection = true;
             }
         }while (loginSection == true);
